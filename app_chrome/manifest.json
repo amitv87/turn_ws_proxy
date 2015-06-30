@@ -1,0 +1,16 @@
+{
+  "manifest_version": 2,
+  "name": "TURN WebSocket Proxy",
+  "version": "3.1",
+  "permissions": ["webview", "system.network"],
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "sockets": {
+    "tcpServer": {
+      "listen": ""
+    }
+  }
+}
