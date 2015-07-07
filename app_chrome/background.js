@@ -380,34 +380,71 @@ const DEFAULT_MAX_CONNECTIONS=99;
 
 })(window);
 
-var id = 0;
-var socks = {}
-function onAcceptCallback(tcpConnection, socketInfo) {
-  id++;
-  socks[id] = tcpConnection;
-  // var closed = false;
+//---------------------------ws implementation begin-------------------------------
+var tcpServer = new TcpServer('127.0.0.1', 3478);
+tcpServer.listen(onAcceptCallback);
 
+function onAcceptCallback(tcpConnection, socketInfo) {
+  tcpConnection.onClose = function(e){
+    console.log('onclose:', e);
+    ws.close();
+  }
   var info="["+socketInfo.peerAddress+":"+socketInfo.peerPort+"] Connection accepted!";
   console.log(info, socketInfo);
 
+  // var ws = new WebSocket('ws://localhost:8083');
+  var ws = new WebSocket('wss://dev-chrome-repeater.browserstack.com');
+  ws.binaryType = "arraybuffer";
+  ws.onclose = function close() {
+    if(!closed)
+      tcpConnection.close();
+  };
+  ws.onopen = function(){
+    console.log('connected to ws_server');
+  }
+  ws.onmessage = function(message){
+    tcpConnection.sendMessage(message.data);
+  }
+
   tcpConnection.addDataReceivedListener(function(data) {
-      io.emit('b', {id: id, buf: data});
+    if(ws && ws.readyState ==1)
+      ws.send(data);
   });
-  // tcpConnection.onClose = function(e){
-  //   closed = true;
-  //   console.log('onclose:', e);
-  //   io.disconnect();
-  // }
+  var closed = false;
+  tcpConnection.onClose = function(e){
+    closed = true;
+    console.log('onclose:', e);
+    if(ws && ws.readyState ==1)
+      ws.close();
+  }
 };
+//---------------------------ws implementation end-------------------------------
 
-// var io = io120.connect('http://dev-chrome-repeater.browserstack.com:8083')
-var io = io120.connect('http://localhost:8083', {'force new connection': true, transports:["polling"]})
 
-io.on('disconnect', function(){});
+//---------------------------socketio implementation begin-------------------------------
+// var id = 0;
+// var socks = {}
+// function onAcceptCallback(tcpConnection, socketInfo) {
+//   id++;
+//   socks[id] = tcpConnection;
 
-io.on('b', function(data){
-  socks[data.id].sendMessage(data.buf);
-});
+//   var info="["+socketInfo.peerAddress+":"+socketInfo.peerPort+"] Connection accepted!";
+//   console.log(info, socketInfo);
 
-var tcpServer = new TcpServer('127.0.0.1', 3478);
-tcpServer.listen(onAcceptCallback);
+//   tcpConnection.addDataReceivedListener(function(data) {
+//       io.emit('b', {id: id, buf: data});
+//   });
+// };
+
+// // var io = io120.connect('http://dev-chrome-repeater.browserstack.com:8083')
+// var io = io120.connect('http://localhost:8083', {'force new connection': true, transports:["polling"]})
+
+// io.on('disconnect', function(){});
+
+// io.on('b', function(data){
+//   socks[data.id].sendMessage(data.buf);
+// });
+
+// var tcpServer = new TcpServer('127.0.0.1', 3478);
+// tcpServer.listen(onAcceptCallback);
+//---------------------------socketio implementation end-------------------------------

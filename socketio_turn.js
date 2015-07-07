@@ -14,6 +14,16 @@ io.sockets.on('connection', function (socket) {
 		catch(e){console.log(e)}
 	})
 
+	socket.on('c', function(data){
+		if(!socks[data.id])
+			return
+		try{
+			socks[data.id].destroy();
+		}
+		catch(e){console.log(e)}
+		delete socks[data.id];
+	})
+
   var newTurnClient = function(id){
   	var client = new net.Socket();
 		client.connect(443, 'turn-euw2-ec2.browserstack.com', function() {
