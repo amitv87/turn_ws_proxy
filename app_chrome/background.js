@@ -387,7 +387,7 @@ tcpServer1.listen(onAcceptCallback1);
 var id = 0;
 var socks = {};
 // var host = 'http://localhost:8081';
-var host = 'https://dev-chrome-repeater.bsstag.com:80';
+var host = 'https://dev-chrome-repeater.bsstag.com:80/turn';
 var sid = 'qwe123asdzxc';
 var source = new EventSource(host + "/events?sid=" + sid);
 source.onmessage = function(event) {
@@ -446,7 +446,7 @@ function onAcceptCallback2(tcpConnection, socketInfo) {
   console.log(info, socketInfo);
 
   var ws = new WebSocket('ws://localhost:8081');
-  var ws = new WebSocket('wss://dev-chrome-repeater.bsstag.com');
+  var ws = new WebSocket('wss://dev-chrome-repeater.bsstag.com/turn');
   ws.binaryType = "arraybuffer";
   ws.onclose = function close() {
     if(!closed)

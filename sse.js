@@ -11,11 +11,13 @@ http.createServer(function (req, res) {
     res.writeHead(200, {"Content-Type":"text/event-stream", "Cache-Control":"no-cache", "Connection":"keep-alive"});
     
     var killSocks = function(){
-      var socks = sess[session_id].socks;
-      for(var key in socks){
-        try {
-          socks[key].destroy();
-        } catch(e){}
+      if(sess[session_id] && sess[session_id].socks){
+        var socks = sess[session_id].socks;
+        for(var key in socks){
+          try {
+            socks[key].destroy();
+          } catch(e){}
+        }
       }
       delete sess[session_id];
       console.log('killed socks', session_id);
@@ -61,4 +63,4 @@ http.createServer(function (req, res) {
       res.end();
     });
   }
-}).listen(8081);
+}).listen(8084);
