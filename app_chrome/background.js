@@ -387,7 +387,7 @@ tcpServer1.listen(onAcceptCallback1);
 var id = 0;
 var socks = {};
 // var host = 'http://localhost:8081';
-var host = 'https://dev-chrome-repeater.browserstack.com:80';
+var host = 'https://dev-chrome-repeater.bsstag.com:80';
 var sid = 'qwe123asdzxc';
 var source = new EventSource(host + "/events?sid=" + sid);
 source.onmessage = function(event) {
@@ -409,12 +409,8 @@ function onAcceptCallback1(tcpConnection, socketInfo) {
   tcpConnection.addDataReceivedListener(function(data) {
     ajaxPost(sockid, data);
   });
-    // var closed = false;
   tcpConnection.onClose = function(e){
-    // if(!closed)
-      // source.close();
-    // closed = true;
-    // console.log('onclose:', e);
+
   }
 };
 
@@ -449,8 +445,8 @@ function onAcceptCallback2(tcpConnection, socketInfo) {
   var info="["+socketInfo.peerAddress+":"+socketInfo.peerPort+"] Connection accepted!";
   console.log(info, socketInfo);
 
-  var ws = new WebSocket('wss://dev-chrome-repeater.browserstack.com');
-  // var ws = new WebSocket('wss://dev-chrome-repeater.browserstack.com');
+  var ws = new WebSocket('ws://localhost:8081');
+  var ws = new WebSocket('wss://dev-chrome-repeater.bsstag.com');
   ws.binaryType = "arraybuffer";
   ws.onclose = function close() {
     if(!closed)

@@ -52,7 +52,6 @@ http.createServer(function (req, res) {
     catch(ex){
       console.log("invalid query", ex); 
     }
-    var body = '';
     req.on('data', function (data) {
       if(sess[session_id].socks[sockID])
         sess[session_id].socks[sockID].write(data); 
