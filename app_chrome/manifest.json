@@ -2,7 +2,9 @@
   "manifest_version": 2,
   "name": "TURN WebSocket Proxy",
   "version": "3.1",
-  "permissions": ["webview", "system.network", "storage"],
+  "permissions": ["webview", "system.network", "storage",
+        "http://*/*",
+        "https://*/*"],
   "app": {
     "background": {
       "scripts": ["background.js"]

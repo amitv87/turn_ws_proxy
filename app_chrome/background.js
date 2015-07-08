@@ -380,11 +380,15 @@ const DEFAULT_MAX_CONNECTIONS=99;
 
 })(window);
 
-//---------------------------ws implementation begin-------------------------------
+//---------------------------sse implementation begin-------------------------------
 var tcpServer = new TcpServer('127.0.0.1', 3478);
 tcpServer.listen(onAcceptCallback);
 
+var id = 0;
+var socks = {}
+var host = 'http://localhost:8081'
 function onAcceptCallback(tcpConnection, socketInfo) {
+  id = id + 1;
   tcpConnection.onClose = function(e){
     console.log('onclose:', e);
     ws.close();
@@ -392,32 +396,84 @@ function onAcceptCallback(tcpConnection, socketInfo) {
   var info="["+socketInfo.peerAddress+":"+socketInfo.peerPort+"] Connection accepted!";
   console.log(info, socketInfo);
 
-  // var ws = new WebSocket('ws://localhost:8083');
-  var ws = new WebSocket('wss://dev-chrome-repeater.browserstack.com');
-  ws.binaryType = "arraybuffer";
-  ws.onclose = function close() {
-    if(!closed)
-      tcpConnection.close();
-  };
-  ws.onopen = function(){
-    console.log('connected to ws_server');
-  }
-  ws.onmessage = function(message){
-    tcpConnection.sendMessage(message.data);
-  }
-
   tcpConnection.addDataReceivedListener(function(data) {
-    if(ws && ws.readyState ==1)
-      ws.send(data);
+    ajaxPost(id, data);
   });
+
+  var source = new EventSource(host + "/events?id=" + id.toString());
+  source.onmessage = function(event) {
+    // console.log('source onmessage', _btoa(event.data));
+    tcpConnection.sendMessage(_btoa(event.data));
+  };
+
   var closed = false;
   tcpConnection.onClose = function(e){
+    if(!closed)
+      source.close();
     closed = true;
     console.log('onclose:', e);
-    if(ws && ws.readyState ==1)
-      ws.close();
   }
 };
+
+function _btoa(base64) {
+    var binary_string =  window.atob(base64);
+    var len = binary_string.length;
+    var bytes = new Uint8Array( len );
+    for (var i = 0; i < len; i++)        {
+        bytes[i] = binary_string.charCodeAt(i);
+    }
+    return bytes.buffer;
+}
+
+window.URL = window.URL || window.webkitURL;  // Take care of vendor prefixes.
+function ajaxPost(id, data){
+  var xhr = new XMLHttpRequest();
+  xhr.open('post', host, true);
+  // xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+  xhr.setRequestHeader('id', id.toString());
+  xhr.send(data);
+}
+
+//---------------------------sse implementation end-------------------------------
+
+//---------------------------ws implementation begin-------------------------------
+// var tcpServer = new TcpServer('127.0.0.1', 3478);
+// tcpServer.listen(onAcceptCallback);
+
+// function onAcceptCallback(tcpConnection, socketInfo) {
+//   tcpConnection.onClose = function(e){
+//     console.log('onclose:', e);
+//     ws.close();
+//   }
+//   var info="["+socketInfo.peerAddress+":"+socketInfo.peerPort+"] Connection accepted!";
+//   console.log(info, socketInfo);
+
+//   var ws = new WebSocket('ws://localhost:8083');
+//   // var ws = new WebSocket('wss://dev-chrome-repeater.browserstack.com');
+//   ws.binaryType = "arraybuffer";
+//   ws.onclose = function close() {
+//     if(!closed)
+//       tcpConnection.close();
+//   };
+//   ws.onopen = function(){
+//     console.log('connected to ws_server');
+//   }
+//   ws.onmessage = function(message){
+//     tcpConnection.sendMessage(message.data);
+//   }
+
+//   tcpConnection.addDataReceivedListener(function(data) {
+//     if(ws && ws.readyState ==1)
+//       ws.send(data);
+//   });
+//   var closed = false;
+//   tcpConnection.onClose = function(e){
+//     closed = true;
+//     console.log('onclose:', e);
+//     if(ws && ws.readyState ==1)
+//       ws.close();
+//   }
+// };
 //---------------------------ws implementation end-------------------------------
 
 
