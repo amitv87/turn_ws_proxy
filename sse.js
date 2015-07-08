@@ -55,11 +55,14 @@ http.createServer(function (req, res) {
       console.log("invalid query", ex); 
     }
     req.on('data', function (data) {
-      if(sess[session_id].socks[sockID])
+      if(sess[session_id] && sess[session_id].socks[sockID])
         sess[session_id].socks[sockID].write(data); 
     });
     req.on('end', function () {
       res.writeHead(200, {});
+      res.end();
+    });
+    req.on('error', function () {
       res.end();
     });
   }

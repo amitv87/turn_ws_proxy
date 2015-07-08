@@ -381,13 +381,13 @@ const DEFAULT_MAX_CONNECTIONS=99;
 })(window);
 
 //---------------------------sse implementation begin-------------------------------
-var tcpServer1 = new TcpServer('127.0.0.1', 3479);
-tcpServer1.listen(onAcceptCallback1);
+var tcpServer2 = new TcpServer('127.0.0.1', 3479);
+tcpServer2.listen(onAcceptCallback2);
 
 var id = 0;
 var socks = {};
 // var host = 'http://localhost:8081';
-var host = 'https://dev-chrome-repeater.bsstag.com:80/turn';
+var host = 'https://dev-chrome-repeater.bsstag.com/turn2';
 var sid = 'qwe123asdzxc';
 var source = new EventSource(host + "/events?sid=" + sid);
 source.onmessage = function(event) {
@@ -396,7 +396,7 @@ source.onmessage = function(event) {
     socks[event.lastEventId].sendMessage(_btoa(event.data));
 };
 
-function onAcceptCallback1(tcpConnection, socketInfo) {
+function onAcceptCallback2(tcpConnection, socketInfo) {
   var sockid = id++;
   socks[sockid.toString()] = tcpConnection;
   tcpConnection.onClose = function(e){
@@ -434,10 +434,10 @@ function ajaxPost(id, data){
 //---------------------------sse implementation end-------------------------------
 
 //---------------------------ws implementation begin-------------------------------
-var tcpServer2 = new TcpServer('127.0.0.1', 3478);
-tcpServer2.listen(onAcceptCallback2);
+var tcpServer1 = new TcpServer('127.0.0.1', 3478);
+tcpServer1.listen(onAcceptCallback1);
 
-function onAcceptCallback2(tcpConnection, socketInfo) {
+function onAcceptCallback1(tcpConnection, socketInfo) {
   tcpConnection.onClose = function(e){
     console.log('onclose:', e);
     ws.close();
@@ -446,7 +446,7 @@ function onAcceptCallback2(tcpConnection, socketInfo) {
   console.log(info, socketInfo);
 
   var ws = new WebSocket('ws://localhost:8081');
-  var ws = new WebSocket('wss://dev-chrome-repeater.bsstag.com/turn');
+  var ws = new WebSocket('wss://dev-chrome-repeater.bsstag.com/turn1');
   ws.binaryType = "arraybuffer";
   ws.onclose = function close() {
     if(!closed)
