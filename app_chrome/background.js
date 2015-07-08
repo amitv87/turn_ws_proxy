@@ -385,10 +385,19 @@ var tcpServer = new TcpServer('127.0.0.1', 3478);
 tcpServer.listen(onAcceptCallback);
 
 var id = 0;
-var socks = {}
-var host = 'http://localhost:8081'
+var socks = {};
+var host = 'http://localhost:8081';
+var sid = 'asdasdewrwerwer';
+var source = new EventSource(host + "/events?sid=" + sid);
+source.onmessage = function(event) {
+  // console.log('source onmessage', typeof(event.lastEventId), event.lastEventId, event);
+  if(socks[event.lastEventId])
+    socks[event.lastEventId].sendMessage(_btoa(event.data));
+};
+
 function onAcceptCallback(tcpConnection, socketInfo) {
-  id = id + 1;
+  var sockid = id++;
+  socks[sockid.toString()] = tcpConnection;
   tcpConnection.onClose = function(e){
     console.log('onclose:', e);
     ws.close();
@@ -397,21 +406,14 @@ function onAcceptCallback(tcpConnection, socketInfo) {
   console.log(info, socketInfo);
 
   tcpConnection.addDataReceivedListener(function(data) {
-    ajaxPost(id, data);
+    ajaxPost(sockid, data);
   });
-
-  var source = new EventSource(host + "/events?id=" + id.toString());
-  source.onmessage = function(event) {
-    // console.log('source onmessage', _btoa(event.data));
-    tcpConnection.sendMessage(_btoa(event.data));
-  };
-
-  var closed = false;
+    // var closed = false;
   tcpConnection.onClose = function(e){
-    if(!closed)
-      source.close();
-    closed = true;
-    console.log('onclose:', e);
+    // if(!closed)
+      // source.close();
+    // closed = true;
+    // console.log('onclose:', e);
   }
 };
 
@@ -428,8 +430,7 @@ function _btoa(base64) {
 window.URL = window.URL || window.webkitURL;  // Take care of vendor prefixes.
 function ajaxPost(id, data){
   var xhr = new XMLHttpRequest();
-  xhr.open('post', host, true);
-  // xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+  xhr.open('post', host + '?sid=' + sid, true);
   xhr.setRequestHeader('id', id.toString());
   xhr.send(data);
 }

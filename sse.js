@@ -2,36 +2,49 @@ var http = require('http');
 var net = require('net');
 var url = require('url');
 var querystring = require('querystring');
-var socks = {};
 
-http.createServer(function (request, res) {
-  if(request.url.match("events")){
+var sess = {};
+http.createServer(function (req, res) {
+  var session_id = querystring.parse(url.parse(req.url)["query"])["sid"];
+
+  if(req.url.match("events")){
     res.writeHead(200, {"Content-Type":"text/event-stream", "Cache-Control":"no-cache", "Connection":"keep-alive"});
+    
+    var killSocks = function(){
+      var socks = sess[session_id].socks;
+      for(var key in socks){
+        try {
+          socks[key].destroy();
+        } catch(e){}
+      }
+      delete sess[session_id];
+      console.log('killed socks', session_id);
+    }
+
+    console.log('started', session_id);
+    if(sess[session_id])
+      killSocks();
+
+    sess[session_id] = {};
+    sess[session_id].sse = res;
+    sess[session_id].socks = {};
+
     console.log("New server sent event request");
+    req.on('error', killSocks);
+    req.on('close', killSocks);
+  }
+  else {
     try {
-      var sockID = querystring.parse(url.parse(request.url)["query"])["id"];
-      request.on('error', function() {
-        if(socks[sockID]) {
-          socks[sockID].destroy();
-          delete(socks[sockID]);
-        }
-      });
-      request.on('close', function() {
-        if(socks[sockID]) {
-          socks[sockID].destroy();
-          delete(socks[sockID]);
-        }
-      });
-      if(typeof(socks[sockID]) === 'undefined'){
+      var sockID = req.headers.id;
+      if(typeof(sess[session_id].socks[sockID]) === 'undefined'){
         var client =  new net.Socket();
+        sess[session_id].socks[sockID] = client;
         client.connect(443, 'turn-euw2-ec2.browserstack.com', function() {
-          console.log("Connecting to turn");
-          socks[sockID] = client;
+          console.log("Connecting to turn", sockID);
           client.on('data', function(data) {
-            // console.log('client received data', data.toString());
-            // res.write(data.toString() + '\n');
-            res.write('id: ' + sockID + '\n');
-            res.write("data: " + data.toString('base64') + '\n\n');
+            // console.log('sockID', sockID);
+            sess[session_id].sse.write('id: ' + sockID + '\n');
+            sess[session_id].sse.write("data: " + data.toString('base64') + '\n\n');
           });
         });
       }
@@ -39,24 +52,14 @@ http.createServer(function (request, res) {
     catch(ex){
       console.log("invalid query", ex); 
     }
-  }
-  else {
-    // console.log("new xhr request");
     var body = '';
-    request.on('data', function (data) {
-      if(socks[request.headers.id]){
-        // console.log('sending data body', data);
-        socks[request.headers.id].write(data); 
-      }
+    req.on('data', function (data) {
+      if(sess[session_id].socks[sockID])
+        sess[session_id].socks[sockID].write(data); 
     });
-    request.on('end', function () {
-      res.writeHead(200, {
-        // 'Access-Control-Allow-Origin': '*',
-        // 'Access-Control-Allow-Headers': 'id, Content-Type',
-//        'Access-Control-Request-Method': 'POST,GET',
-      });
+    req.on('end', function () {
+      res.writeHead(200, {});
       res.end();
-      
     });
   }
 }).listen(8081);
