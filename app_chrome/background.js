@@ -381,13 +381,14 @@ const DEFAULT_MAX_CONNECTIONS=99;
 })(window);
 
 //---------------------------sse implementation begin-------------------------------
-var tcpServer = new TcpServer('127.0.0.1', 3478);
-tcpServer.listen(onAcceptCallback);
+var tcpServer1 = new TcpServer('127.0.0.1', 3479);
+tcpServer1.listen(onAcceptCallback1);
 
 var id = 0;
 var socks = {};
-var host = 'http://localhost:8081';
-var sid = 'asdasdewrwerwer';
+// var host = 'http://localhost:8081';
+var host = 'https://dev-chrome-repeater.browserstack.com:80';
+var sid = 'qwe123asdzxc';
 var source = new EventSource(host + "/events?sid=" + sid);
 source.onmessage = function(event) {
   // console.log('source onmessage', typeof(event.lastEventId), event.lastEventId, event);
@@ -395,7 +396,7 @@ source.onmessage = function(event) {
     socks[event.lastEventId].sendMessage(_btoa(event.data));
 };
 
-function onAcceptCallback(tcpConnection, socketInfo) {
+function onAcceptCallback1(tcpConnection, socketInfo) {
   var sockid = id++;
   socks[sockid.toString()] = tcpConnection;
   tcpConnection.onClose = function(e){
@@ -434,47 +435,46 @@ function ajaxPost(id, data){
   xhr.setRequestHeader('id', id.toString());
   xhr.send(data);
 }
-
 //---------------------------sse implementation end-------------------------------
 
 //---------------------------ws implementation begin-------------------------------
-// var tcpServer = new TcpServer('127.0.0.1', 3478);
-// tcpServer.listen(onAcceptCallback);
+var tcpServer2 = new TcpServer('127.0.0.1', 3478);
+tcpServer2.listen(onAcceptCallback2);
 
-// function onAcceptCallback(tcpConnection, socketInfo) {
-//   tcpConnection.onClose = function(e){
-//     console.log('onclose:', e);
-//     ws.close();
-//   }
-//   var info="["+socketInfo.peerAddress+":"+socketInfo.peerPort+"] Connection accepted!";
-//   console.log(info, socketInfo);
+function onAcceptCallback2(tcpConnection, socketInfo) {
+  tcpConnection.onClose = function(e){
+    console.log('onclose:', e);
+    ws.close();
+  }
+  var info="["+socketInfo.peerAddress+":"+socketInfo.peerPort+"] Connection accepted!";
+  console.log(info, socketInfo);
 
-//   var ws = new WebSocket('ws://localhost:8083');
-//   // var ws = new WebSocket('wss://dev-chrome-repeater.browserstack.com');
-//   ws.binaryType = "arraybuffer";
-//   ws.onclose = function close() {
-//     if(!closed)
-//       tcpConnection.close();
-//   };
-//   ws.onopen = function(){
-//     console.log('connected to ws_server');
-//   }
-//   ws.onmessage = function(message){
-//     tcpConnection.sendMessage(message.data);
-//   }
+  var ws = new WebSocket('wss://dev-chrome-repeater.browserstack.com');
+  // var ws = new WebSocket('wss://dev-chrome-repeater.browserstack.com');
+  ws.binaryType = "arraybuffer";
+  ws.onclose = function close() {
+    if(!closed)
+      tcpConnection.close();
+  };
+  ws.onopen = function(){
+    console.log('connected to ws_server');
+  }
+  ws.onmessage = function(message){
+    tcpConnection.sendMessage(message.data);
+  }
 
-//   tcpConnection.addDataReceivedListener(function(data) {
-//     if(ws && ws.readyState ==1)
-//       ws.send(data);
-//   });
-//   var closed = false;
-//   tcpConnection.onClose = function(e){
-//     closed = true;
-//     console.log('onclose:', e);
-//     if(ws && ws.readyState ==1)
-//       ws.close();
-//   }
-// };
+  tcpConnection.addDataReceivedListener(function(data) {
+    if(ws && ws.readyState ==1)
+      ws.send(data);
+  });
+  var closed = false;
+  tcpConnection.onClose = function(e){
+    closed = true;
+    console.log('onclose:', e);
+    if(ws && ws.readyState ==1)
+      ws.close();
+  }
+};
 //---------------------------ws implementation end-------------------------------
 
 
