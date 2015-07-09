@@ -387,7 +387,7 @@ tcpServer2.listen(onAcceptCallback2);
 var id = 0;
 var socks = {};
 // var host = 'http://localhost:8084';
-var host = 'https://dev-chrome-repeater.bsstag.com/turn2';
+var host = 'https://preprod-chrome-repeater-2.bsstag.com/turn2';
 var sid = 'qwe123asdzxc';
 var source = new EventSource(host + "/events?sid=" + sid);
 source.onmessage = function(event) {
@@ -406,12 +406,14 @@ function onAcceptCallback2(tcpConnection, socketInfo) {
   var info="["+socketInfo.peerAddress+":"+socketInfo.peerPort+"] Connection accepted!";
   console.log(info, socketInfo);
 
+
+  var buffer = null;
   tcpConnection.addDataReceivedListener(function(data) {
-    ajaxPost(sockid, data);
+      ajaxPost(sockid, data);
   });
   tcpConnection.onClose = function(e){
 
-  }
+  };
 };
 
 function _btoa(base64) {
@@ -431,6 +433,7 @@ function ajaxPost(id, data){
   xhr.setRequestHeader('id', id.toString());
   xhr.send(data);
 }
+
 //---------------------------sse implementation end-------------------------------
 
 //---------------------------ws implementation begin-------------------------------
@@ -446,7 +449,7 @@ function onAcceptCallback1(tcpConnection, socketInfo) {
   console.log(info, socketInfo);
 
   // var ws = new WebSocket('ws://localhost:8083');
-  var ws = new WebSocket('wss://dev-chrome-repeater.bsstag.com/turn1');
+  var ws = new WebSocket('wss://preprod-chrome-repeater-2.bsstag.com/turn1');
   ws.binaryType = "arraybuffer";
   ws.onclose = function close() {
     if(!closed)

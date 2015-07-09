@@ -8,7 +8,7 @@ http.createServer(function (req, res) {
   var session_id = querystring.parse(url.parse(req.url)["query"])["sid"];
 
   if(req.url.match("events")){
-    res.writeHead(200, {"Content-Type":"text/event-stream", "Cache-Control":"no-cache", "Connection":"keep-alive"});
+    res.writeHead(200, {"Content-Type":"text/event-stream", "Cache-Control":"no-cache"});
     
     var killSocks = function(){
       if(sess[session_id] && sess[session_id].socks){
