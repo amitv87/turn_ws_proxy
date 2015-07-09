@@ -386,7 +386,7 @@ tcpServer2.listen(onAcceptCallback2);
 
 var id = 0;
 var socks = {};
-// var host = 'http://localhost:8081';
+// var host = 'http://localhost:8084';
 var host = 'https://dev-chrome-repeater.bsstag.com/turn2';
 var sid = 'qwe123asdzxc';
 var source = new EventSource(host + "/events?sid=" + sid);
@@ -445,7 +445,7 @@ function onAcceptCallback1(tcpConnection, socketInfo) {
   var info="["+socketInfo.peerAddress+":"+socketInfo.peerPort+"] Connection accepted!";
   console.log(info, socketInfo);
 
-  var ws = new WebSocket('ws://localhost:8081');
+  // var ws = new WebSocket('ws://localhost:8083');
   var ws = new WebSocket('wss://dev-chrome-repeater.bsstag.com/turn1');
   ws.binaryType = "arraybuffer";
   ws.onclose = function close() {
