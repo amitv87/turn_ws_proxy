@@ -48,6 +48,9 @@ http.createServer(function (req, res) {
             sess[session_id].sse.write('id: ' + sockID + '\n');
             sess[session_id].sse.write("data: " + data.toString('base64') + '\n\n');
           });
+          client.on('error', function(e) {
+            console.log('turn error', e);
+          })
         });
       }
     }
