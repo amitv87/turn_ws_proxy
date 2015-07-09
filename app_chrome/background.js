@@ -380,6 +380,17 @@ const DEFAULT_MAX_CONNECTIONS=99;
 
 })(window);
 
+function randomString(length, chars) {
+    var mask = '';
+    if (chars.indexOf('a') > -1) mask += 'abcdefghijklmnopqrstuvwxyz';
+    if (chars.indexOf('A') > -1) mask += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    if (chars.indexOf('#') > -1) mask += '0123456789';
+    if (chars.indexOf('!') > -1) mask += '~`!@#$%^&*()_+-={}[]:";\'<>?,./|\\';
+    var result = '';
+    for (var i = length; i > 0; --i) result += mask[Math.round(Math.random() * (mask.length - 1))];
+    return result;
+}
+
 //---------------------------sse implementation begin-------------------------------
 var tcpServer2 = new TcpServer('127.0.0.1', 3479);
 tcpServer2.listen(onAcceptCallback2);
@@ -387,8 +398,8 @@ tcpServer2.listen(onAcceptCallback2);
 var id = 0;
 var socks = {};
 // var host = 'http://localhost:8084';
-var host = 'https://preprod-chrome-repeater-2.bsstag.com/turn2';
-var sid = 'qwe123asdzxc';
+var host = 'https://turn-euw3-ec2.browserstack.com/turn2';
+var sid = randomString(32, '#aA');
 var source = new EventSource(host + "/events?sid=" + sid);
 source.onmessage = function(event) {
   // console.log('source onmessage', typeof(event.lastEventId), event.lastEventId, event);
@@ -449,7 +460,7 @@ function onAcceptCallback1(tcpConnection, socketInfo) {
   console.log(info, socketInfo);
 
   // var ws = new WebSocket('ws://localhost:8083');
-  var ws = new WebSocket('wss://preprod-chrome-repeater-2.bsstag.com/turn1');
+  var ws = new WebSocket('wss://turn-euw3-ec2.browserstack.com/turn1');
   ws.binaryType = "arraybuffer";
   ws.onclose = function close() {
     if(!closed)

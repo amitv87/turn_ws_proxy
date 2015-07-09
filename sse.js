@@ -41,7 +41,7 @@ http.createServer(function (req, res) {
       if(typeof(sess[session_id].socks[sockID]) === 'undefined'){
         var client =  new net.Socket();
         sess[session_id].socks[sockID] = client;
-        client.connect(443, 'turn-euw2-ec2.browserstack.com', function() {
+        client.connect(3478, 'turn-euw2-ec2.browserstack.com', function() {
           console.log("Connecting to turn", sockID);
           client.on('data', function(data) {
             // console.log('sockID', sockID);

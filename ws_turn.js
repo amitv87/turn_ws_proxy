@@ -2,7 +2,7 @@ var net = require('net'), wss = new (require('ws').Server)({ port: 8083});
 wss.on('connection', function connection(ws) {
 	console.log("connection received from proxy");
 	var client = new net.Socket();
-	client.connect(443, 'turn-euw2-ec2.browserstack.com', function() {
+	client.connect(3478, 'turn-euw2-ec2.browserstack.com', function() {
 		console.log('connected to turn', client.remotePort, client.remoteAddress);
 	});
 	client.on('data', function(data) {
