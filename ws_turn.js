@@ -7,7 +7,7 @@ wss.on('connection', function connection(ws) {
 	});
 	client.on('data', function(data) {
 		if(ws.readyState == 1) {
-			ws.send(data);
+			ws.send(data.toString('base64'));
 		}
 	});
 	client.on('close', function() {
@@ -19,7 +19,7 @@ wss.on('connection', function connection(ws) {
   	console.log('turn error', error);
   });
   ws.on('message', function incoming(data) {
-    client.write(data);
+    client.write(new Buffer(data,'base64'));
   });
   var close_client = function(){
   	if(client)

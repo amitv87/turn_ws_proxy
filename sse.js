@@ -59,7 +59,7 @@ http.createServer(function (req, res) {
     }
     req.on('data', function (data) {
       if(sess[session_id] && sess[session_id].socks[sockID])
-        sess[session_id].socks[sockID].write(data); 
+        sess[session_id].socks[sockID].write(new Buffer(data.toString(), 'base64')); 
     });
     req.on('end', function () {
       res.writeHead(200, {});

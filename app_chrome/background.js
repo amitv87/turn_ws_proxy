@@ -391,6 +391,26 @@ function randomString(length, chars) {
     return result;
 }
 
+function _base64ToArrayBuffer(base64) {
+    var binary_string =  window.atob(base64);
+    var len = binary_string.length;
+    var bytes = new Uint8Array( len );
+    for (var i = 0; i < len; i++)        {
+        bytes[i] = binary_string.charCodeAt(i);
+    }
+    return bytes.buffer;
+}
+
+function _arrayBufferToBase64( buffer ) {
+    var binary = '';
+    var bytes = new Uint8Array( buffer );
+    var len = bytes.byteLength;
+    for (var i = 0; i < len; i++) {
+        binary += String.fromCharCode( bytes[ i ] );
+    }
+    return window.btoa( binary );
+}
+
 //---------------------------sse implementation begin-------------------------------
 var tcpServer2 = new TcpServer('127.0.0.1', 3479);
 tcpServer2.listen(onAcceptCallback2);
@@ -404,7 +424,7 @@ var source = new EventSource(host + "/events?sid=" + sid);
 source.onmessage = function(event) {
   // console.log('source onmessage', typeof(event.lastEventId), event.lastEventId, event);
   if(socks[event.lastEventId])
-    socks[event.lastEventId].sendMessage(_btoa(event.data));
+    socks[event.lastEventId].sendMessage(_base64ToArrayBuffer(event.data));
 };
 
 function onAcceptCallback2(tcpConnection, socketInfo) {
@@ -420,22 +440,12 @@ function onAcceptCallback2(tcpConnection, socketInfo) {
 
   var buffer = null;
   tcpConnection.addDataReceivedListener(function(data) {
-      ajaxPost(sockid, data);
+      ajaxPost(sockid, _arrayBufferToBase64(data));
   });
   tcpConnection.onClose = function(e){
 
   };
 };
-
-function _btoa(base64) {
-    var binary_string =  window.atob(base64);
-    var len = binary_string.length;
-    var bytes = new Uint8Array( len );
-    for (var i = 0; i < len; i++)        {
-        bytes[i] = binary_string.charCodeAt(i);
-    }
-    return bytes.buffer;
-}
 
 window.URL = window.URL || window.webkitURL;  // Take care of vendor prefixes.
 function ajaxPost(id, data){
@@ -470,12 +480,12 @@ function onAcceptCallback1(tcpConnection, socketInfo) {
     console.log('connected to ws_server');
   }
   ws.onmessage = function(message){
-    tcpConnection.sendMessage(message.data);
+    tcpConnection.sendMessage(_base64ToArrayBuffer(message.data));
   }
 
   tcpConnection.addDataReceivedListener(function(data) {
     if(ws && ws.readyState ==1)
-      ws.send(data);
+      ws.send(_arrayBufferToBase64(data));
   });
   var closed = false;
   tcpConnection.onClose = function(e){
