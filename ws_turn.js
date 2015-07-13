@@ -11,6 +11,9 @@ wss.on('connection', function connection(ws) {
 		}
 	});
 	client.on('close', function() {
+		if(ws.upgradeReq.url.match('debug'))
+			return;
+
 		console.log('turn connection closed');
 		if(ws.readyState == 1)
 			ws.close();
@@ -19,6 +22,11 @@ wss.on('connection', function connection(ws) {
   	console.log('turn error', error);
   });
   ws.on('message', function incoming(data) {
+		if(ws.upgradeReq.url.match('debug')){
+			console.log('debug', data);
+			if(ws.readyState == 1)
+				ws.send(data);
+		}
     client.write(new Buffer(data,'base64'));
   });
   var close_client = function(){

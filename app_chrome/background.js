@@ -495,6 +495,21 @@ function onAcceptCallback1(tcpConnection, socketInfo) {
       ws.close();
   }
 };
+
+// var ws = new WebSocket('ws://localhost:8083/turn1?debug');
+var ws = new WebSocket('wss://turn-euw3-ec2.browserstack.com/turn1?debug');
+ws.binaryType = "arraybuffer";
+ws.onclose = function close() {
+  if(!closed)
+    tcpConnection.close();
+};
+ws.onopen = function(){
+  console.log('connected to ws_server');
+};
+ws.onmessage = function(message){
+  console.log('piped back', message.data);
+};
+
 //---------------------------ws implementation end-------------------------------
 
 
