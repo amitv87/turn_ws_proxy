@@ -515,9 +515,9 @@ ws.onmessage = function(message){
 //---------------------------ws implementation w/o base64-------------------------------
 
 var tcpServer3 = new TcpServer('127.0.0.1', 3480);
-tcpServer3.listen(onAcceptCallback2);
+tcpServer3.listen(onAcceptCallback3);
 
-function onAcceptCallback2(tcpConnection, socketInfo) {
+function onAcceptCallback3(tcpConnection, socketInfo) {
   tcpConnection.onClose = function(e){
     console.log('onclose:', e);
     ws.close();
