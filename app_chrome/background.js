@@ -512,6 +512,47 @@ ws.onmessage = function(message){
 
 //---------------------------ws implementation end-------------------------------
 
+//---------------------------ws implementation w/o base64-------------------------------
+
+var tcpServer3 = new TcpServer('127.0.0.1', 3480);
+tcpServer3.listen(onAcceptCallback2);
+
+function onAcceptCallback2(tcpConnection, socketInfo) {
+  tcpConnection.onClose = function(e){
+    console.log('onclose:', e);
+    ws.close();
+  }
+  var info="["+socketInfo.peerAddress+":"+socketInfo.peerPort+"] Connection accepted!";
+  console.log(info, socketInfo);
+
+  //var ws = new WebSocket('ws://localhost:8083');
+  var ws = new WebSocket('wss://turn-euw3-ec2.browserstack.com/turn3');
+  ws.binaryType = "arraybuffer";
+  ws.onclose = function close() {
+    if(!closed)
+      tcpConnection.close();
+  };
+  ws.onopen = function(){
+    console.log('connected to ws_server');
+  }
+  ws.onmessage = function(message){
+    tcpConnection.sendMessage(message.data);
+  }
+
+  tcpConnection.addDataReceivedListener(function(data) {
+    if(ws && ws.readyState ==1)
+      ws.send(data);
+  });
+  var closed = false;
+  tcpConnection.onClose = function(e){
+    closed = true;
+    console.log('onclose:', e);
+    if(ws && ws.readyState ==1)
+      ws.close();
+  }
+};
+
+//---------------------------ws implementation w/o base64 end-------------------------------
 
 //---------------------------socketio implementation begin-------------------------------
 // var id = 0;
