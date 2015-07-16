@@ -1,4 +1,4 @@
-var net = require('net'), wss = new (require('ws').Server)({ port: 8083});
+var net = require('net'), wss = new (require('ws').Server)({ port: 8086});
 wss.on('connection', function connection(ws) {
 	console.log("connection received from proxy");
 	var client = new net.Socket();
