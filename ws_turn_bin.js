@@ -1,33 +1,46 @@
 var net = require('net'), wss = new (require('ws').Server)({ port: 8086});
 wss.on('connection', function connection(ws) {
 	console.log("connection received from proxy");
+
+	var buff = null;
+	var storeBuff = function(buffer) {
+	  if(buff){
+	    var tmp = new Uint8Array(buff.byteLength + buffer.byteLength);
+	    tmp.set(new Uint8Array(buff), 0);
+	    tmp.set(new Uint8Array(buffer), buff.byteLength);
+	    buff = tmp.buffer;
+	  }
+	  else
+	    buff = buffer;
+	};
+
 	var client = new net.Socket();
 	client.connect(443, 'turn-euw2-ec2.browserstack.com', function() {
 		console.log('connected to turn', client.remotePort, client.remoteAddress);
-	});
-	client.on('data', function(data) {
-		if(ws.readyState == 1) {
-			ws.send(data);
+		if(buff && client && client.writable){
+			client.write(buff);
+			buff = null
 		}
 	});
-	client.on('close', function() {
-		if(ws.upgradeReq.url.match('debug'))
-			return;
 
+	client.on('data', function(data) {
+		if(ws && ws.readyState == 1)
+			ws.send(data);
+	});
+
+	client.on('close', function() {
 		console.log('turn connection closed');
-		if(ws.readyState == 1)
+		if(ws && ws.readyState == 1)
 			ws.close();
 	});
 	client.on('error', function (error) {
   	console.log('turn error', error);
   });
   ws.on('message', function incoming(data) {
-		if(ws.upgradeReq.url.match('debug')){
-			console.log('debug', data);
-			if(ws.readyState == 1)
-				ws.send(data);
-		}
-    client.write(data);
+		if(client && client.writable)
+			client.write(data);
+		else
+			storeBuff(data);
   });
   var close_client = function(){
   	if(client)
