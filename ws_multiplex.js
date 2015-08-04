@@ -18,9 +18,9 @@ wss.on('connection', function connection(ws) {
   var killConns = function(){
     for(var key in conns){
       try {
-        conns[key].destroy();
+        conns[key].client.destroy();
       } catch(e){}
-      delete conns[key]
+      delete conns[key];
     }
     conns = null;
   };
@@ -32,6 +32,7 @@ wss.on('connection', function connection(ws) {
 var tcpClient = function (ws, conn_id, onClose){
 	var buff = [];
 	var client = new net.Socket();
+	this.client = client;
 	client.connect(443, 'turn-euw2-ec2.browserstack.com', function() {
 		log('connected to turn', client.remotePort, client.remoteAddress);
 		while (buff.length > 0 && client && client.writable){
