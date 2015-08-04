@@ -8,7 +8,8 @@ wss.on('connection', function connection(ws) {
 			conn_id = data;
 			if(!conns[conn_id]) {
 				conns[conn_id] = new tcpClient(ws, conn_id, function(){
-					delete conns[conn_id];
+					if(conns)
+						delete conns[conn_id];
 				});
 			}
 		}
